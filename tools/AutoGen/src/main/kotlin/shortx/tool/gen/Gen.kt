@@ -8,7 +8,6 @@ import tornaco.apps.shortx.core.rule.repo.Index
 import tornaco.apps.shortx.core.rule.repo.Item
 import java.io.File
 
-const val baseUrl = "https://raw.githubusercontent.com/ShortX-Repo/Files/main"
 const val daDir = "da"
 const val ruleDir = "rule"
 
@@ -29,10 +28,16 @@ object Gen {
                         "Unable to parse Direct action: $fileContent"
                     }
                     Item(
-                        fileUrl = "${baseUrl}/$daDir/${it.name}",
+                        fileUrl = it.name,
                         title = directAction.title,
                         description = directAction.description,
-                        author = "Github",
+                        author = directAction.author.name,
+                        id = directAction.id,
+                        versionCode = directAction.versionCode,
+                        updateTimeMillis = directAction.lastUpdateTime,
+                        tags = emptyList(),
+                        icon = null,
+                        iconColor = null
                     )
                 }
                 Logger.info("Direct action count: ${das.size}")
@@ -45,16 +50,22 @@ object Gen {
                         "Unable to parse Rule: $fileContent"
                     }
                     Item(
-                        fileUrl = "${baseUrl}/$ruleDir/${it.name}",
+                        fileUrl = it.name,
                         title = rule.title,
                         description = rule.description,
-                        author = "Github",
+                        author = rule.author.name,
+                        id = rule.id,
+                        versionCode = rule.versionCode,
+                        updateTimeMillis = rule.lastUpdateTime,
+                        tags = emptyList(),
+                        icon = null,
+                        iconColor = null
                     )
                 }
                 Logger.info("Rule count: ${rules.size}")
 
                 // Write index
-                val index = Index(directActions = das, rules = rules)
+                val index = Index(directActions = das, rules = rules, updateTimeMillis = 0)
                 val indexJson = gson.toJson(index)
                 Logger.info(indexJson)
                 File(File(outputDir), "index.json")
@@ -65,6 +76,7 @@ object Gen {
 
             }.onFailure {
                 it.printStackTrace()
+                throw IllegalStateException(it)
             }
         }
     }
